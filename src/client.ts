@@ -1,9 +1,11 @@
 import { StateDiff, StateStore } from './state-var';
 import { Logger } from './logger';
+import getDiff from './diff-lib';
+import { onEvent, sendEvent } from './ws-types';
 
 export class SyncClient {
     socket: WebSocket
-    stateVars: Map<string, StateStore> = new Map();
+    stateVars: Map<string, StateStore<any>> = new Map();
     log = new Logger('SyncClient');
 
     getVar(name: string) {
@@ -14,48 +16,44 @@ export class SyncClient {
     }
 
     constructor(public url: string) {
-        this.socket = new WebSocket(url);
+        if (typeof WebSocket !== 'undefined') {
+            // @ts-ignore WebSocket is awailable
+            this.socket = new WebSocket(url);
+        } else {
+            this.socket = new (require('ws'))(url);
+        }
         const peerId = `SERVER`;
 
         this.socket.onopen = () => {
             this.log.info("Connected");
-            this.log.debug("State Vars", this.stateVars);
 
             for (const [name, stateVar] of this.stateVars) {
-                const packet = {
+                const serverState = stateVar.getPeerState(peerId);
+                sendEvent(this.socket, {
                     event: 'subscribe',
-                    data: {
-                        name
-                    }
-                };
-                this.log.debug('Sending to WS', packet);
-                this.socket.send(JSON.stringify(packet));
+                    data: { name }
+                });
 
-                stateVar.getPeerState(peerId).onUpdate = (stateDiff: StateDiff) => {
-                    this.socket.send(JSON.stringify({
+                serverState.onSync((value, oldValue) => {
+                    sendEvent(this.socket, {
                         event: 'sync',
                         data: {
                             name,
-                            value: stateDiff
+                            value: serverState.getDiffFrom(oldValue)
                         }
-                    }));
-                };
-                stateVar.syncThrottled();
+                    });
+                });
             }
         };
 
-        this.socket.onmessage = (ev) => {
-            // console.log(ev);
-            const { event, data } = JSON.parse(ev.data);
-            this.log.debug('Message', event, data);
-            if (event === "sync") {
-                const name: string = data.name;
-                const stateDiff: StateDiff = data.value;
+        onEvent(this.socket, message => {
+            if (message.event === 'sync') {
+                const {name, value: stateDiff} = message.data;
 
                 const stateVar = this.getVar(name);
-                stateVar.getPeerState(peerId).updateDiff(stateDiff);
-                stateVar.syncThrottled();
+                const serverState = stateVar.getPeerState(peerId);
+                serverState.updateDiff(stateDiff);
             }
-        };
+        });
     }
 }

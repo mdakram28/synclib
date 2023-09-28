@@ -1,14 +1,16 @@
-import WebSocket, { WebSocketServer } from 'ws';
+import { WebSocketServer } from 'ws';
 import { StateDiff, StateStore } from '../state-var';
 import { JSONValue } from '../json-types';
 import { Logger } from '../logger';
+import getDiff from '../diff-lib';
+import { onEvent, sendEvent } from '../ws-types';
 
 let clientIdCounter = 1;
 
 export class SyncServer {
     log = new Logger('SyncServer');
     wss: WebSocketServer
-    stateVars: Map<string, StateStore> = new Map();
+    stateVars: Map<string, StateStore<any>> = new Map();
 
 
     getVar(name: string) {
@@ -39,30 +41,26 @@ export class SyncServer {
             const peerId = `CLIENT_${clientIdCounter++}`;
             this.log.info('New Client', peerId);
 
-            ws.on('message', (message: string) => {
-                const { event, data } = JSON.parse(message);
-                this.log.info('Message', event, data);
-                if (event === "sync") {
-                    const name: string = data.name;
-                    const stateDiff: StateDiff = data.value;
+            onEvent(ws, message => {
+                if (message.event === "sync") {
+                    const {name, value: stateDiff} = message.data;
 
                     const stateVar = this.getVar(name);
                     stateVar.getPeerState(peerId).updateDiff(stateDiff);
-                    stateVar.syncThrottled();
-
-                } else if (event === "subscribe") {
-                    const name: string = data.name;
+                } else if (message.event === "subscribe") {
+                    const name = message.data.name;
                     const stateVar = this.getVar(name);
-                    stateVar.getPeerState(peerId).onUpdate = (stateDiff: StateDiff) => {
-                        ws.send(JSON.stringify({
+                    const peerState = stateVar.getPeerState(peerId);
+                    peerState.onSync((value, oldValue) => {
+                        sendEvent(ws, {
                             event: 'sync',
                             data: {
                                 name,
-                                value: stateDiff
+                                value: peerState.getDiffFrom(oldValue)
                             }
-                        }));
-                    }
-                    stateVar.syncThrottled();
+                        });
+                    });
+                    stateVar.syncPeers();
                 }
             });
         });

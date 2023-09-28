@@ -1,20 +1,23 @@
 import { SyncClient } from "../client";
 import { JSONArray } from "../json-types";
 import { Logger } from "../logger";
+import { StateStore } from "../state-var";
 
 const log = new Logger('clientTest');
 const client = new SyncClient(`ws://localhost:8000`);
 
-client.getVar('name').updateSelf('akram');
+const nameVar: StateStore<string> = client.getVar('name')
+nameVar.updateValue('akram');
 
-const arr = client.getVar('array');
 
-arr.self.onUpdate = () => {
-    log.info(arr.self.value);
-}
+const arrVar: StateStore<number[]> = client.getVar('array');
+arrVar.onSync(value => console.log(value));
 
 setInterval(() => {
     console.log('Updating....');
-    const val = (arr.self.value || [])as JSONArray;
-    arr.updateSelf([...val, val.length]);
+    const val = arrVar.getValue() || [];
+    arrVar.updateValue([...val, val.length]);
+    // setTimeout(() => {
+    //     process.exit();
+    // }, 2000);
 }, 5000);
