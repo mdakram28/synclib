@@ -1,0 +1,20 @@
+{
+  "name": "synclib",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "start": "tsc -w",
+    "perf": "tsc-node test/perf.ts"
+  },
+  "files": [
+    "/dist"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.7.1",
+    "tsc-node": "^0.0.3",
+    "typescript": "^5.2.2"
+  }
+}
