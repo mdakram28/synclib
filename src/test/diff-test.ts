@@ -1,4 +1,4 @@
-import getDiff, { applyDiff, log } from "../src/diff-lib";
+import getDiff, { applyDiff, log } from "../diff-lib";
 
 const OLD_VALUES = {
     NULL: null,

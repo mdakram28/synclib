@@ -1,5 +1,3 @@
-import { Socket } from "net";
-import { SyncServer } from "./server";
 import getDiff, { applyDiff } from "./diff-lib";
 import { JSONDiff, JSONValue } from "./json-types";
 import { throttle } from "lodash";

@@ -1,9 +1,5 @@
-import WebSocket, { WebSocketServer } from 'ws';
 import { StateDiff, StateStore } from './state-var';
-import { JSONValue } from './json-types';
 import { Logger } from './logger';
-
-let clientIdCounter = 1;
 
 export class SyncClient {
     socket: WebSocket
@@ -48,8 +44,9 @@ export class SyncClient {
             }
         };
 
-        this.socket.on('message', (message: string) => {
-            const { event, data } = JSON.parse(message);
+        this.socket.onmessage = (ev) => {
+            // console.log(ev);
+            const { event, data } = JSON.parse(ev.data);
             this.log.debug('Message', event, data);
             if (event === "sync") {
                 const name: string = data.name;
@@ -59,6 +56,6 @@ export class SyncClient {
                 stateVar.getPeerState(peerId).updateDiff(stateDiff);
                 stateVar.syncThrottled();
             }
-        });
+        };
     }
 }

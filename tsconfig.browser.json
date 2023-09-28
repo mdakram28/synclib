@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "module": "ES2015",
+        "target": "ES2019",
+        "declaration": true,
+        "outDir": "./dist.browser",
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "lib": ["es2016", "dom", "es5"],
+        "skipLibCheck": true
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "src/server/**/*",
+        "src/test/**/*"
+    ]
+}

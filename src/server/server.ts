@@ -1,7 +1,7 @@
 import WebSocket, { WebSocketServer } from 'ws';
-import { StateDiff, StateStore } from './state-var';
-import { JSONValue } from './json-types';
-import { Logger } from './logger';
+import { StateDiff, StateStore } from '../state-var';
+import { JSONValue } from '../json-types';
+import { Logger } from '../logger';
 
 let clientIdCounter = 1;
 
