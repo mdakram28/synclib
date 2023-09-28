@@ -1,6 +1,6 @@
 import getDiff, { applyDiff, log } from "../src/diff-lib";
 
-const VALUES = {
+const OLD_VALUES = {
     NULL: null,
 
     STRING1: "test_string_1",
@@ -33,6 +33,64 @@ const VALUES = {
         b: "world",
         c: {
             d: 678
+        }
+    },
+}
+
+const VALUES = {
+    S1: {
+        "job1": {
+            name: "Job 1",
+            status: "Scheduled",
+            logs: []
+        }
+    },
+    S2: {
+        "job1": {
+            name: "Job 1",
+            status: "Running",
+            logs: []
+        }
+    },
+    S3: {
+        "job1": {
+            name: "Job 1",
+            status: "Running",
+            logs: [
+                "line1",
+                "line2",
+            ]
+        }
+    },
+    S4: {
+        "job1": {
+            name: "Job 1",
+            status: "Running",
+            logs: [
+                "line1",
+                "line2",
+                "line2",
+                "line2",
+                "line2",
+                "line2",
+            ]
+        }
+    },
+    S5: {
+        "job1": {
+            name: "Job 1",
+            status: "Running",
+            logs: [
+                "line1",
+                "line2",
+                "line2",
+                "line2",
+                "line2",
+                "line2",
+                "line2",
+                "line2",
+                "line2",
+            ]
         }
     },
 }

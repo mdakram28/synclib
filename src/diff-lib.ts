@@ -25,7 +25,8 @@ const DIFF_DELETE: JSONDiff = { _t: "X" };
 const DIFF_UNCHANGED: JSONDiff = { _t: "U" };
 
 export const log = {
-    debug: console.debug
+    // debug: console.debug
+    debug: (...args) => {}
 }
 
 var diffCache = new WeakMap<JSONObject, WeakMap<JSONObject, JSONDiff>>();
